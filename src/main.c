@@ -5,7 +5,7 @@
 #include "../header/var.h"
 
 int main(int argc,char **argv) {
-    if(argc < 0 || argc > 2) {
+    if(argc != 2) {
         printf("Error: Invalid usage of the tool\n");
         printf("Correct usage: ./main <file_name>\n");
         return 1;
