@@ -13,6 +13,11 @@ void execute_show(Ast *ast, Variable_list *list) {
             break;
         case VAL_IDENT:
             index = get_variable_value(list, ast->data.showText.value.data.ident);
+            if(index == -1) {
+                printf("Error: Variable %s not found\n",ast->data.put.varname);
+                return;
+            }
+
             if(list->vars[index].v.type == VAL_INT)
                 printf("%d\n",list->vars[index].v.data.int_value);
             else
