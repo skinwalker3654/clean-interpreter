@@ -3,35 +3,54 @@
 #include <string.h>
 #include <stdio.h>
 
-Value val_new_ident(char *ident) {
-    Value val = {VAL_IDENT,.data.ident=ident};
-    return val;
+Expr expr_new_ident(char *ident) {
+    Expr ex = {EXPR_IDENT,.ident=strdup(ident)};
+    return ex;
 }
 
-Value val_new_int(int num) {
-    Value val = {VAL_INT,.data.int_value=num};
-    return val;
+Expr expr_new_int(int num) {
+    Expr exal = {EXPR_INT,.int_value=num};
+    return exal;
 }
 
-Value val_new_str(char *str) {
-    Value val = {VAL_STR,.data.str_value=str};
-    return val;
+Expr expr_new_str(char *str) {
+    Expr ex = {EXPR_STR,.str_value=strdup(str)};
+    return ex;
 }
 
-void val_destroy(Value v) {
-    switch(v.type) {
-        case VAL_IDENT:
-            free(v.data.ident);
+Expr expr_new_read(char *prompt) {
+   Expr ex = {EXPR_READ,.read_var.prompt=strdup(prompt)};
+   return ex;
+}
+
+void expr_destroy(Expr ex) {
+    switch(ex.type) {
+        case EXPR_IDENT:
+            free(ex.ident);
             return;
-        case VAL_STR:
-            free(v.data.str_value);
+        case EXPR_STR:
+            free(ex.str_value);
+            return;
+        case EXPR_READ:
+            free(ex.read_var.prompt);
             return;
         default:
             return;
     }
 }
 
-Ast *ast_new_put(char *varname, Value v) {
+Expr expr_copy_expr(Expr ex) {
+    switch(ex.type) {
+        case EXPR_STR:
+            return expr_new_str(ex.str_value);
+        case EXPR_IDENT:
+            return expr_new_ident(ex.ident);
+        default:
+            return ex;
+    }
+}
+
+Ast *ast_new_put(char *varname, Expr ex) {
     Ast *new_ast = malloc(sizeof(Ast));
     if(!new_ast) {
         printf("Failed to create the ast node\n");
@@ -39,11 +58,11 @@ Ast *ast_new_put(char *varname, Value v) {
     }
 
     new_ast->type = AST_PUT;
-    new_ast->data.put.value = v;
+    new_ast->data.put.expr = ex;
 
     new_ast->data.put.varname = strdup(varname);
     if(!new_ast->data.put.varname) {
-        printf("Failed to create the variable ast\n");
+        printf("Failed to create the exariable ast\n");
         free(new_ast);
         return NULL;
     }
@@ -52,7 +71,7 @@ Ast *ast_new_put(char *varname, Value v) {
     return new_ast;
 }
 
-Ast *ast_new_show(Value v) {
+Ast *ast_new_show(Expr ex) {
     Ast *new_ast = malloc(sizeof(Ast));
     if(!new_ast) {
         printf("Failed to create the ast node\n");
@@ -60,7 +79,7 @@ Ast *ast_new_show(Value v) {
     }
 
     new_ast->type = AST_SHOW;
-    new_ast->data.showText.value = v;
+    new_ast->data.showText.expr = ex;
 
     new_ast->next = NULL;
     return new_ast;
@@ -81,11 +100,11 @@ void ast_append(Ast **head, Ast *node) {
 /* destroy API */
 static void ast_destroy_put(Ast *ast) {
     free(ast->data.put.varname);
-    val_destroy(ast->data.put.value);
+    expr_destroy(ast->data.put.expr);
 }
 
 static void ast_destroy_show(Ast *ast) {
-    val_destroy(ast->data.showText.value);
+    expr_destroy(ast->data.showText.expr);
 }
 
 void ast_destroy(Ast *ast) {

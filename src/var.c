@@ -27,9 +27,10 @@ Variable_list *variable_list_init() {
 void variable_list_free(Variable_list *list) {
     if(!list) return;
 
-    for(int i=0; i<list->counter; i++) 
+    for(int i=0; i<list->counter; i++) {
         free(list->vars[i].name);
-    
+        expr_destroy(list->vars[i].ex);
+    }
 
     free(list->vars);
     free(list);
@@ -53,7 +54,7 @@ int get_variable_value(Variable_list *list, char *name) {
     return found;
 }
 
-void push_variable_value(Variable_list *list, char *varname, Value v) {
+void push_variable_value(Variable_list *list, char *varname, Expr ex) {
     if(!list) {
         printf("List is not initialized\n");
         return;
@@ -76,6 +77,6 @@ void push_variable_value(Variable_list *list, char *varname, Value v) {
         return;
     }
     
-    list->vars[list->counter].v = v;
+    list->vars[list->counter].ex = expr_copy_expr(ex);
     list->counter++;
 }

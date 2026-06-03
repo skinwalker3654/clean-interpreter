@@ -10,6 +10,7 @@ typedef enum {
     TOK_STR,
     TOK_IDENT,
     TOK_SHOW_TEXT,
+    TOK_READ_VAR,
     TOK_SEMI,
     TOK_LPAR,
     TOK_RPAR,

@@ -5,12 +5,13 @@ A minimal, readable scripting language designed for simplicity and educational u
 ## Overview
 
 This language is built to feel like readable pseudocode while still being structured and deterministic.  
-It supports variables and printing
+It supports variables, output and input
 
 ## Features
 
 - Variables with `put`
 - showText function that prints stuff to the screen
+- input with `readVar`
 
 ## Syntax
 
@@ -28,6 +29,12 @@ showText(number);
 showText(name);
 
 showText("Actuall text");
+```
+
+### input
+
+```bash
+put readVar("Prompt: ") on var;
 ```
 ---
 

@@ -45,7 +45,7 @@ static void advance(Parser *ps) {
 }
 
 static int consum(Parser *ps, Tok_type type, const char *msg) {
-    if (ps->current->type != type) {
+    if(ps->current->type != type) {
         printf("Parse error: %s\n", msg);
         ps->had_error = 1;
         return 0;
@@ -55,44 +55,63 @@ static int consum(Parser *ps, Tok_type type, const char *msg) {
     return 1;
 }
 
-Value parser_parse_value(Parser *ps) {
-    Value v = {0};
+Expr parser_parse_expr(Parser *ps) {
+    Expr ex = {0};
 
-    if (ps->current->type == TOK_NUM) {
-        v = val_new_int(atol(ps->current->value));
+    if(ps->current->type == TOK_NUM) {
+        ex = expr_new_int(atol(ps->current->value));
         advance(ps);
-        return v;
+        return ex;
     }
 
-    if (ps->current->type == TOK_STR) {
-        v = val_new_str(strdup(ps->current->value));
+    if(ps->current->type == TOK_STR) {
+        ex = expr_new_str(ps->current->value);
         advance(ps);
-        return v;
+        return ex;
     }
 
-    if (ps->current->type == TOK_IDENT) {
-        v = val_new_ident(strdup(ps->current->value));
+    if(ps->current->type == TOK_IDENT) {
+        ex = expr_new_ident(ps->current->value);
         advance(ps);
-        return v;
+        return ex;
     }
 
-    printf("Parse error: invalid value '%s'\n", ps->current->value);
+    if(ps->current->type == TOK_READ_VAR) {
+        advance(ps);
+        if(!consum(ps,TOK_LPAR,"expected '('")) 
+            return ex;
+        
+        if(ps->current->type != TOK_STR) {
+            printf("Expected string inside of \" \"\n");
+            return ex;
+        }
+
+        ex = expr_new_read(ps->current->value);
+        advance(ps);
+
+        if(!consum(ps,TOK_RPAR,"expected ')'")) 
+            return ex;
+        
+        return ex;
+    }
+
+    printf("Parse error: inexprid exalue '%s'\n", ps->current->value);
     ps->had_error = 1;
 
-    return v;
+    return ex;
 }
 
 Ast *parser_parse_put(Parser *ps) {
     if(!consum(ps,TOK_PUT,"expected 'put'"))
         return NULL;
 
-    Value v = parser_parse_value(ps);
+    Expr ex = parser_parse_expr(ps);
 
     if(!consum(ps,TOK_ON,"expected 'on'"))
         return NULL;
 
     if(ps->current->type != TOK_IDENT) {
-        printf("Parse error: expected variable name\n");
+        printf("Parse error: expected exariable name\n");
         ps->had_error = 1;
         return NULL;
     }
@@ -105,7 +124,7 @@ Ast *parser_parse_put(Parser *ps) {
     if(!consum(ps,TOK_SEMI,"expected ';'"))
         return NULL;
 
-    Ast *new_put = ast_new_put(name,v);
+    Ast *new_put = ast_new_put(name,ex);
     free(name);
 
     return new_put;
@@ -118,7 +137,7 @@ Ast *parser_parse_show(Parser *ps) {
     if(!consum(ps,TOK_LPAR,"expected '('")) 
         return NULL;
 
-    Value v = parser_parse_value(ps);
+    Expr ex = parser_parse_expr(ps);
 
     if(!consum(ps,TOK_RPAR,"expected ')'")) 
         return NULL;
@@ -126,7 +145,7 @@ Ast *parser_parse_show(Parser *ps) {
     if(!consum(ps,TOK_SEMI,"expected ';'")) 
         return NULL;
     
-    Ast *new_show = ast_new_show(v);
+    Ast *new_show = ast_new_show(ex);
     if(!new_show) return NULL;
 
     return new_show;
@@ -138,7 +157,7 @@ Ast *parser_parse_stmt(Parser *ps) {
     } else if(ps->current->type == TOK_SHOW_TEXT) {
         return parser_parse_show(ps);
     } else {
-        printf("Error: Invalid value to start '%s'\n",ps->current->value);
+        printf("Error: Inexprid exalue to start '%s'\n",ps->current->value);
         ps->had_error = 1;
         advance(ps);
         return NULL;

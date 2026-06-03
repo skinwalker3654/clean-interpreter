@@ -5,7 +5,7 @@
 
 typedef struct {
     char *name;
-    Value v;
+    Expr ex;
 } Variable;
 
 typedef struct {
@@ -18,6 +18,6 @@ Variable_list *variable_list_init();
 void variable_list_free(Variable_list *list);
 
 int get_variable_value(Variable_list *list, char *name);
-void push_variable_value(Variable_list *list, char *varname, Value v);
+void push_variable_value(Variable_list *list, char *varname, Expr ex);
 
 #endif

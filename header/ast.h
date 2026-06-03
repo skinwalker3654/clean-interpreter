@@ -7,41 +7,48 @@ typedef enum {
 } Ast_type;
 
 typedef enum {
-    VAL_INT,
-    VAL_STR,
-    VAL_IDENT,
-} Value_type;
+    EXPR_INT,
+    EXPR_STR,
+    EXPR_IDENT,
+    EXPR_READ,
+} Expr_type;
 
 typedef struct {
-    Value_type type;
+    Expr_type type;
     union {
         int int_value;
         char *str_value;
         char *ident;
-    } data;
-} Value;
+
+        struct {
+            char *prompt;
+        } read_var;
+    };
+} Expr;
 
 typedef struct Ast {
     Ast_type type;
     union {
         struct {
             char *varname;
-            Value value;
+            Expr expr;
         } put;
         struct {
-            Value value;
+            Expr expr;
         } showText;
     } data;
     struct Ast *next;
 } Ast;
 
-Value val_new_int(int num);
-Value val_new_str(char *str);
-Value val_new_ident(char *ident);
-void val_destroy(Value v);
+Expr expr_new_int(int num);
+Expr expr_new_str(char *str);
+Expr expr_new_ident(char *ident);
+Expr expr_new_read(char *prompt);
+Expr expr_copy_expr(Expr ex);
+void expr_destroy(Expr v);
 
-Ast *ast_new_put(char *varname, Value v);
-Ast *ast_new_show(Value v);
+Ast *ast_new_put(char *varname, Expr ex);
+Ast *ast_new_show(Expr ex);
 
 void ast_append(Ast **head,Ast *node);
 void ast_destroy(Ast *ast);

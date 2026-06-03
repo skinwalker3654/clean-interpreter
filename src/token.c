@@ -74,6 +74,9 @@ static Token *get_ident(Lexer *lx) {
     } else if(strcmp(buffer,"showText")==0) {
         free(buffer);
         return token_create(TOK_SHOW_TEXT,NULL);
+    } else if(strcmp(buffer,"readVar")==0) {
+        free(buffer);
+        return token_create(TOK_READ_VAR,NULL);
     } else { 
         Token *tk = token_create(TOK_IDENT,buffer);
         free(buffer);
