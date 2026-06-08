@@ -4,16 +4,18 @@
 #include <stdio.h>
 
 void execute_put(Ast *ast, Variable_list *list) {
-    char buffer[256];
+    char *buffer;
+    size_t size = 0;
     switch(ast->data.put.expr.type) {
         case EXPR_READ:
             printf("%s",ast->data.put.expr.read_var.prompt);
-            fgets(buffer,sizeof(buffer),stdin);
+            getline(&buffer,&size,stdin);
             buffer[strcspn(buffer,"\n")] = '\0';
 
             Expr new_expr = expr_new_str(buffer);
             push_variable_value(list, ast->data.put.varname, new_expr);
             expr_destroy(new_expr);
+            free(buffer);
             break;
         default:
             push_variable_value(list, ast->data.put.varname, ast->data.put.expr);
