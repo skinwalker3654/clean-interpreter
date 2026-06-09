@@ -7,7 +7,6 @@
 typedef struct {
     Lexer *lx;
     Token *current;
-    int had_error;
 } Parser;
 
 Parser *parser_init(char *source);

@@ -36,8 +36,11 @@ int main(int argc,char **argv) {
     Parser *ps = parser_init(buffer);
 
     Ast *ast = parser_parse_program(ps);
+    if(ast == NULL) goto CLEAN_UP;
+
     execute_program(ast, list);
 
+CLEAN_UP:
     ast_destroy(ast);
     parser_destroy(ps);
 

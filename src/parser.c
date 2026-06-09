@@ -46,8 +46,7 @@ static void advance(Parser *ps) {
 
 static int consum(Parser *ps, Tok_type type, const char *msg) {
     if(ps->current->type != type) {
-        printf("Parse error: %s\n", msg);
-        ps->had_error = 1;
+        printf("Line %d: Parse error: %s\n",ps->lx->line,msg);
         return 0;
     }
 
@@ -96,8 +95,6 @@ Expr parser_parse_expr(Parser *ps) {
     }
 
     printf("Parse error: inexprid exalue '%s'\n", ps->current->value);
-    ps->had_error = 1;
-
     return ex;
 }
 
@@ -107,12 +104,14 @@ Ast *parser_parse_put(Parser *ps) {
 
     Expr ex = parser_parse_expr(ps);
 
-    if(!consum(ps,TOK_ON,"expected 'on'"))
+    if(!consum(ps,TOK_ON,"expected 'on'")) {
+        expr_destroy(ex);
         return NULL;
+    }
 
     if(ps->current->type != TOK_IDENT) {
         printf("Parse error: expected exariable name\n");
-        ps->had_error = 1;
+        expr_destroy(ex);
         return NULL;
     }
 
@@ -121,12 +120,20 @@ Ast *parser_parse_put(Parser *ps) {
 
     advance(ps);
 
-    if(!consum(ps,TOK_SEMI,"expected ';'"))
+    if(!consum(ps,TOK_SEMI,"expected ';'")) {
+        free(name);
+        expr_destroy(ex);
         return NULL;
+    }
 
     Ast *new_put = ast_new_put(name,ex);
-    free(name);
+    if(!new_put) {
+        free(name);
+        expr_destroy(ex);
+        return NULL;
+    }
 
+    free(name);
     return new_put;
 }
 
@@ -139,14 +146,21 @@ Ast *parser_parse_show(Parser *ps) {
 
     Expr ex = parser_parse_expr(ps);
 
-    if(!consum(ps,TOK_RPAR,"expected ')'")) 
+    if(!consum(ps,TOK_RPAR,"expected ')'")) {
+        expr_destroy(ex);
         return NULL;
+    }
 
-    if(!consum(ps,TOK_SEMI,"expected ';'")) 
+    if(!consum(ps,TOK_SEMI,"expected ';'"))  {
+        expr_destroy(ex);
         return NULL;
+    }
     
     Ast *new_show = ast_new_show(ex);
-    if(!new_show) return NULL;
+    if(!new_show) {
+        expr_destroy(ex);
+        return NULL;
+    }
 
     return new_show;
 }
@@ -158,7 +172,6 @@ Ast *parser_parse_stmt(Parser *ps) {
         return parser_parse_show(ps);
     } else {
         printf("Error: Inexprid exalue to start '%s'\n",ps->current->value);
-        ps->had_error = 1;
         advance(ps);
         return NULL;
     }
@@ -168,6 +181,11 @@ Ast *parser_parse_program(Parser *ps) {
     Ast *head = NULL;
     while(ps->current->type != TOK_EOF) {
         Ast *new = parser_parse_stmt(ps);
+        if(!new) {
+            ast_destroy(head);
+            return NULL;
+        }
+
         ast_append(&head, new);
     }
 
