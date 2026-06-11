@@ -68,7 +68,6 @@ Expr expr_copy_expr(Expr ex);
 void expr_destroy(Expr v);
 
 Condition cond_new(Expr left, Cond_type type, Expr right);
-Condition cond_copy(Condition cond);
 void cond_destroy(Condition cond);
 
 Ast *ast_new_put(char *varname, Expr ex);

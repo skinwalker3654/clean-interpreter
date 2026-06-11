@@ -60,36 +60,6 @@ void cond_destroy(Condition cond) {
     expr_destroy(cond.right);
 }
 
-Condition cond_copy(Condition cond) {
-    Condition new_cond = {0};
-    switch(cond.left.type) {
-        case EXPR_IDENT:
-            new_cond.left = expr_new_ident(cond.left.ident);
-            break;
-        case EXPR_INT:
-            new_cond.left = expr_new_int(cond.left.int_value);
-            break;
-        default:
-            break;
-    }
-
-    switch(cond.right.type) {
-        case EXPR_IDENT:
-            new_cond.right = expr_new_ident(cond.right.ident);
-            break;
-        case EXPR_INT:
-            new_cond.right = expr_new_int(cond.right.int_value);
-            break;
-        default:
-            break;
-    }
-    
-    new_cond.type = cond.type;
-    cond_destroy(cond);
-
-    return new_cond;
-}
-
 Ast *ast_new_put(char *varname, Expr ex) {
     Ast *new_ast = malloc(sizeof(Ast));
     if(!new_ast) {
@@ -133,7 +103,7 @@ Ast *ast_new_if(Condition cond, Ast *body) {
     }
 
     new_ast->type = AST_IF;
-    new_ast->data.if_stmt.cond = cond_copy(cond);
+    new_ast->data.if_stmt.cond = cond;
     new_ast->data.if_stmt.body = body;
 
     new_ast->next = NULL;
