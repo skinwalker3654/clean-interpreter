@@ -77,6 +77,12 @@ static Token *get_ident(Lexer *lx) {
     } else if(strcmp(buffer,"readVar")==0) {
         free(buffer);
         return token_create(TOK_READ_VAR,NULL);
+    } else if(strcmp(buffer,"do")==0) {
+        free(buffer);
+        return token_create(TOK_DO,NULL);
+    } else if(strcmp(buffer,"if")==0) {
+        free(buffer);
+        return token_create(TOK_IF,NULL);
     } else { 
         Token *tk = token_create(TOK_IDENT,buffer);
         free(buffer);
@@ -130,6 +136,11 @@ Token *token_get_next(Lexer *lx) {
         return token_create(TOK_EOF,NULL);
     }
 
+    if(current == '#') {
+        while(lexer_peek(lx) != '\n') lexer_advance(lx);
+        return token_get_next(lx);
+    }
+
     if(isalpha(current)) {
         return get_ident(lx);
     }
@@ -142,6 +153,25 @@ Token *token_get_next(Lexer *lx) {
         return get_string(lx);
     }
 
+    char doubles[3] = {current,lx->source[lx->pos+1],'\0'};
+    if(strcmp(doubles,"==")==0) {
+        lexer_advance(lx);
+        lexer_advance(lx);
+        return token_create(TOK_EQEQ,NULL);
+    } else if(strcmp(doubles,">=")==0) {
+        lexer_advance(lx);
+        lexer_advance(lx);
+        return token_create(TOK_GE,NULL);
+    } else if(strcmp(doubles,"<=")==0) {
+        lexer_advance(lx);
+        lexer_advance(lx);
+        return token_create(TOK_LE,NULL);
+    } else if(strcmp(doubles,"!=")==0) {
+        lexer_advance(lx);
+        lexer_advance(lx);
+        return token_create(TOK_NOT_EQ,NULL);
+    }
+
     char symbol[2] = {current,'\0'};
     lexer_advance(lx);
 
@@ -149,6 +179,10 @@ Token *token_get_next(Lexer *lx) {
         case ';': return token_create(TOK_SEMI,NULL);
         case '(': return token_create(TOK_LPAR,NULL);
         case ')': return token_create(TOK_RPAR,NULL);
+        case '{': return token_create(TOK_LBRA,NULL);
+        case '}': return token_create(TOK_RBRA,NULL);
+        case '<': return token_create(TOK_LT,NULL);
+        case '>': return token_create(TOK_GT,NULL);
     }
 
     printf("Error %d: Invalid character '%s'\n",lx->line,symbol);

@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 
+/* OWNER - SHIP*/
 Parser *parser_init(char *source) {
     Parser *new_parser = malloc(sizeof(Parser));
     if(!new_parser) {
@@ -39,6 +40,7 @@ void parser_destroy(Parser *ps) {
     ps = NULL;
 }
 
+/* PARSER - API */
 static void advance(Parser *ps) {
     token_destroy(ps->current);
     ps->current = token_get_next(ps->lx);
@@ -54,8 +56,9 @@ static int consum(Parser *ps, Tok_type type, const char *msg) {
     return 1;
 }
 
+/* EXPR - API */
 Expr parser_parse_expr(Parser *ps) {
-    Expr ex = {0};
+    Expr ex = {.type=-1};
 
     if(ps->current->type == TOK_NUM) {
         ex = expr_new_int(atol(ps->current->value));
@@ -96,15 +99,70 @@ Expr parser_parse_expr(Parser *ps) {
         return ex;
     }
 
-    printf("Parse error: inexprid exalue '%s'\n", ps->current->value);
+    printf("Parser error line %d: Inexprid value '%s'\n",ps->lx->line,ps->current->value);
     return ex;
 }
 
+/* COND - API */
+static Cond_type tok_type_to_cond(Parser *ps) {
+    switch(ps->current->type) {
+        case TOK_EQEQ:
+            return COND_EQEQ;
+        case TOK_GE:
+            return COND_GE;
+        case TOK_GT:
+            return COND_GT;
+        case TOK_LE:
+            return COND_LE;
+        case TOK_LT:
+            return COND_LT;
+        case TOK_NOT_EQ:
+            return COND_NOT_EQ;
+        default:
+            return -1;
+    }
+}
+
+Condition parser_parse_cond(Parser *ps) {
+    Condition cond = {.type=-1};
+
+    Expr left = parser_parse_expr(ps);
+    if(left.type == -1) {
+        expr_destroy(left);
+        return cond;
+    }
+
+    if(ps->current->type != TOK_EQEQ 
+        && ps->current->type != TOK_GE
+        && ps->current->type != TOK_GT 
+        && ps->current->type != TOK_LE
+        && ps->current->type != TOK_LT
+        && ps->current->type != TOK_NOT_EQ) {
+        printf("Parser error line %d: invalid condition type. ",ps->lx->line);
+        expr_destroy(left);
+        return cond;
+    }
+
+    Cond_type type = tok_type_to_cond(ps);
+    advance(ps);
+
+    Expr right = parser_parse_expr(ps);
+    if(right.type == -1) {
+        expr_destroy(left);
+        expr_destroy(right);
+        return cond;
+    }
+
+    return cond_new(left, type, right);
+}
+
+/* AST - API */
 Ast *parser_parse_put(Parser *ps) {
     if(!consum(ps,TOK_PUT,"expected 'put'"))
         return NULL;
 
     Expr ex = parser_parse_expr(ps);
+    if(ex.type == -1) return NULL;
 
     if(!consum(ps,TOK_ON,"expected 'on'")) {
         expr_destroy(ex);
@@ -147,6 +205,7 @@ Ast *parser_parse_show(Parser *ps) {
         return NULL;
 
     Expr ex = parser_parse_expr(ps);
+    if(ex.type == -1) return NULL;
 
     if(!consum(ps,TOK_RPAR,"expected ')'")) {
         expr_destroy(ex);
@@ -167,11 +226,49 @@ Ast *parser_parse_show(Parser *ps) {
     return new_show;
 }
 
+Ast *parser_parse_stmt(Parser *ps);
+
+Ast *parser_parse_if(Parser *ps) {
+    if(!consum(ps,TOK_DO,"expected 'do'")) 
+        return NULL;
+
+    if(!consum(ps,TOK_LBRA,"expected '{'"))
+        return NULL;
+
+    Ast *body = NULL;
+    while(ps->current->type != TOK_RBRA) {
+        Ast *stmt = parser_parse_stmt(ps);
+        if(!stmt){
+            ast_destroy(body);
+            return NULL;
+        }
+
+        ast_append(&body, stmt);
+    }
+
+    if(!consum(ps,TOK_RBRA,"expected '}'"))
+        return NULL;
+
+    if(!consum(ps,TOK_IF,"expected 'if'"))
+        return NULL;
+    
+    Condition cond = parser_parse_cond(ps);
+
+    if(!consum(ps,TOK_SEMI,"expected ';'")) {
+        cond_destroy(cond);
+        return NULL;
+    }
+
+    return ast_new_if(cond, body);
+}
+
 Ast *parser_parse_stmt(Parser *ps) {
     if(ps->current->type == TOK_PUT) {
         return parser_parse_put(ps);
     } else if(ps->current->type == TOK_SHOW_TEXT) {
         return parser_parse_show(ps);
+    } else if(ps->current->type == TOK_DO) {
+        return parser_parse_if(ps);
     } else {
         printf("Error: Inexprid exalue to start '%s'\n",ps->current->value);
         advance(ps);

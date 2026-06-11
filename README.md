@@ -9,11 +9,17 @@ It supports variables, output and input
 
 ## Features
 
-- Variables with `put`
-- showText function that prints stuff to the screen
-- input with `readVar`
+- Variables with `put VALUE on VAR;`
+- Output with `showText(VAR);` OR `showText("TEXT");`
+- Input with `put readVar(PROMPT) on VAR`
+- Conditions with `do { } if CONDITION;`
 
 ## Syntax
+
+### comments
+```bash
+# this is a comment
+```
 
 ### Variables
 
@@ -36,12 +42,36 @@ showText("Actuall text");
 ```bash
 put readVar("Prompt: ") on var;
 ```
+
+### conditions
+```bash
+do {
+    # code
+} if number == 4;
+
+# you can use either variables or numbers for the conditions comparation and also you can use >,<,>=,<=,!=
+```
 ---
 
 ## Build And Run
 ```bash
-make  # compile the program
-./main <filename> # execute scripts
+git clone https://github.com/skinwalker3654/string-lib
+cd string-lib 
+
+make install
+
+cd ..
+rm -rf string-lib
+
+git clone https://github.com/skinwalker3654/clean-interpreter
+cd clean-interpreter
+make  
+```
+
+## use
+```bash
+# to execute the scripts just simply run
+./main <file_name>
 ```
 ---
 

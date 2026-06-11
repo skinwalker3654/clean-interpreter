@@ -50,6 +50,46 @@ Expr expr_copy_expr(Expr ex) {
     }
 }
 
+Condition cond_new(Expr left, Cond_type type, Expr right) {
+    Condition new = { type,left, right};
+    return new;
+}
+
+void cond_destroy(Condition cond) {
+    expr_destroy(cond.left);
+    expr_destroy(cond.right);
+}
+
+Condition cond_copy(Condition cond) {
+    Condition new_cond = {0};
+    switch(cond.left.type) {
+        case EXPR_IDENT:
+            new_cond.left = expr_new_ident(cond.left.ident);
+            break;
+        case EXPR_INT:
+            new_cond.left = expr_new_int(cond.left.int_value);
+            break;
+        default:
+            break;
+    }
+
+    switch(cond.right.type) {
+        case EXPR_IDENT:
+            new_cond.right = expr_new_ident(cond.right.ident);
+            break;
+        case EXPR_INT:
+            new_cond.right = expr_new_int(cond.right.int_value);
+            break;
+        default:
+            break;
+    }
+    
+    new_cond.type = cond.type;
+    cond_destroy(cond);
+
+    return new_cond;
+}
+
 Ast *ast_new_put(char *varname, Expr ex) {
     Ast *new_ast = malloc(sizeof(Ast));
     if(!new_ast) {
@@ -80,6 +120,21 @@ Ast *ast_new_show(Expr ex) {
 
     new_ast->type = AST_SHOW;
     new_ast->data.showText.expr = ex;
+
+    new_ast->next = NULL;
+    return new_ast;
+}
+
+Ast *ast_new_if(Condition cond, Ast *body) {
+    Ast *new_ast = malloc(sizeof(Ast));
+    if(!new_ast)  {
+        printf("Failed to create the ast node\n");
+        return NULL;
+    }
+
+    new_ast->type = AST_IF;
+    new_ast->data.if_stmt.cond = cond_copy(cond);
+    new_ast->data.if_stmt.body = body;
 
     new_ast->next = NULL;
     return new_ast;
@@ -120,6 +175,10 @@ void ast_destroy(Ast *ast) {
                 break;
             case AST_SHOW:
                 ast_destroy_show(temp);
+                break;
+            case AST_IF:
+                cond_destroy(temp->data.if_stmt.cond);
+                ast_destroy(temp->data.if_stmt.body);
                 break;
         }
 

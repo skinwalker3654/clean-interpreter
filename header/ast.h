@@ -4,6 +4,7 @@
 typedef enum {
     AST_SHOW,
     AST_PUT,
+    AST_IF,
 } Ast_type;
 
 typedef enum {
@@ -26,6 +27,21 @@ typedef struct {
     };
 } Expr;
 
+typedef enum {
+    COND_EQEQ,
+    COND_GE,
+    COND_GT,
+    COND_LE,
+    COND_LT,
+    COND_NOT_EQ,
+} Cond_type;
+
+typedef struct {
+    Cond_type type;
+    Expr left;
+    Expr right;
+} Condition;
+
 typedef struct Ast {
     Ast_type type;
     union {
@@ -33,6 +49,10 @@ typedef struct Ast {
             char *varname;
             Expr expr;
         } put;
+        struct {
+            Condition cond;
+            struct Ast *body;
+        } if_stmt;
         struct {
             Expr expr;
         } showText;
@@ -47,8 +67,13 @@ Expr expr_new_read(char *prompt);
 Expr expr_copy_expr(Expr ex);
 void expr_destroy(Expr v);
 
+Condition cond_new(Expr left, Cond_type type, Expr right);
+Condition cond_copy(Condition cond);
+void cond_destroy(Condition cond);
+
 Ast *ast_new_put(char *varname, Expr ex);
 Ast *ast_new_show(Expr ex);
+Ast *ast_new_if(Condition cond, Ast *body);
 
 void ast_append(Ast **head,Ast *node);
 void ast_destroy(Ast *ast);

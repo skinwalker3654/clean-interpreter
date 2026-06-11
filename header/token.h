@@ -4,16 +4,37 @@
 #include "lexer.h"
 
 typedef enum {
+    /* keywords */
     TOK_PUT,
     TOK_ON,
+    TOK_DO,
+    TOK_IF,
+
+    /* values */
     TOK_NUM,
     TOK_STR,
     TOK_IDENT,
+
+    /* functions */
     TOK_SHOW_TEXT,
     TOK_READ_VAR,
+
+    /* symbols */
     TOK_SEMI,
     TOK_LPAR,
     TOK_RPAR,
+    TOK_LBRA,
+    TOK_RBRA,
+
+    /* conditions */
+    TOK_EQEQ,
+    TOK_GE,
+    TOK_GT,
+    TOK_LE,
+    TOK_LT,
+    TOK_NOT_EQ,
+
+    /* extra */
     TOK_EOF,
     TOK_ERR,
 } Tok_type;
