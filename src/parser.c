@@ -77,8 +77,9 @@ Expr parser_parse_expr(Parser *ps) {
 
     if(ps->current->type == TOK_READ_VAR) {
         advance(ps);
-        if(!consum(ps,TOK_LPAR,"expected '('")) 
+        if(!consum(ps,TOK_LPAR,"expected '('")) {
             return ex;
+        }
         
         if(ps->current->type != TOK_STR) {
             printf("Expected string inside of \" \"\n");
@@ -88,8 +89,9 @@ Expr parser_parse_expr(Parser *ps) {
         ex = expr_new_read(ps->current->value);
         advance(ps);
 
-        if(!consum(ps,TOK_RPAR,"expected ')'")) 
+        if(!consum(ps,TOK_RPAR,"expected ')'")) {
             return ex;
+        }
         
         return ex;
     }

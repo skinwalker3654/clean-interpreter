@@ -4,8 +4,8 @@
 #include "ast.h"
 #include "var.h"
 
-void execute_put(Ast *ast,Variable_list *list);
-void execute_show(Ast *ast,Variable_list *list);
-void execute_program(Ast *ast,Variable_list *list);
+int execute_put(Ast *ast,Variable_list *list);
+int execute_show(Ast *ast,Variable_list *list);
+int execute_program(Ast *ast,Variable_list *list);
 
 #endif

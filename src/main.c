@@ -38,7 +38,7 @@ int main(int argc,char **argv) {
     Ast *ast = parser_parse_program(ps);
     if(ast == NULL) goto CLEAN_UP;
 
-    execute_program(ast, list);
+    if(execute_program(ast, list)==-1) goto CLEAN_UP;
 
 CLEAN_UP:
     ast_destroy(ast);
