@@ -229,8 +229,10 @@ Ast *parser_parse_show(Parser *ps) {
 Ast *parser_parse_stmt(Parser *ps);
 
 Ast *parser_parse_if(Parser *ps) {
-    if(!consum(ps,TOK_DO,"expected 'do'")) 
+    if(!consum(ps,TOK_IF,"expected 'if'"))
         return NULL;
+    
+    Condition cond = parser_parse_cond(ps);
 
     if(!consum(ps,TOK_LBRA,"expected '{'"))
         return NULL;
@@ -240,21 +242,14 @@ Ast *parser_parse_if(Parser *ps) {
         Ast *stmt = parser_parse_stmt(ps);
         if(!stmt){
             ast_destroy(body);
+            cond_destroy(cond);
             return NULL;
         }
 
         ast_append(&body, stmt);
     }
 
-    if(!consum(ps,TOK_RBRA,"expected '}'"))
-        return NULL;
-
-    if(!consum(ps,TOK_IF,"expected 'if'"))
-        return NULL;
-    
-    Condition cond = parser_parse_cond(ps);
-
-    if(!consum(ps,TOK_SEMI,"expected ';'")) {
+    if(!consum(ps,TOK_RBRA,"expected '}'")) {
         cond_destroy(cond);
         return NULL;
     }
@@ -267,7 +262,7 @@ Ast *parser_parse_stmt(Parser *ps) {
         return parser_parse_put(ps);
     } else if(ps->current->type == TOK_SHOW_TEXT) {
         return parser_parse_show(ps);
-    } else if(ps->current->type == TOK_DO) {
+    } else if(ps->current->type == TOK_IF) {
         return parser_parse_if(ps);
     } else {
         printf("Error: Inexprid exalue to start '%s'\n",ps->current->value);

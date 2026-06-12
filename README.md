@@ -45,9 +45,9 @@ put readVar("Prompt: ") on var;
 
 ### conditions
 ```bash
-do {
+if number == 4 {
     # code
-} if number == 4;
+}
 
 # you can use either variables or numbers for the conditions comparation and also you can use >,<,>=,<=,!=
 ```

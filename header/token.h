@@ -7,7 +7,6 @@ typedef enum {
     /* keywords */
     TOK_PUT,
     TOK_ON,
-    TOK_DO,
     TOK_IF,
 
     /* values */
