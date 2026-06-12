@@ -12,7 +12,8 @@ It supports variables, output and input
 - Variables with `put VALUE on VAR;`
 - Output with `showText(VAR);` OR `showText("TEXT");`
 - Input with `put readVar(PROMPT) on VAR`
-- Conditions with `do { } if CONDITION;`
+- Conditions with `if CONDITION { CODE }`
+- Loops with `while CONDITION { CODE }`
 
 ## Syntax
 
@@ -51,6 +52,16 @@ if number == 4 {
 
 # you can use either variables or numbers for the conditions comparation and also you can use >,<,>=,<=,!=
 ```
+
+### loops
+```bash
+while number == 4 {
+    # code
+}
+
+# you can use either variables or numbers for the conditions comparation and also you can use >,<,>=,<=,!=
+```
+
 ---
 
 ## Build And Run

@@ -246,6 +246,35 @@ Ast *parser_parse_if(Parser *ps) {
             return NULL;
         }
 
+        ast_append(&body,stmt);
+    }
+
+    if(!consum(ps,TOK_RBRA,"expected '}'")) {
+        cond_destroy(cond);
+        return NULL;
+    }
+
+    return ast_new_if(cond,body);
+}
+
+Ast *parser_parse_while(Parser *ps) {
+    if(!consum(ps,TOK_WHILE,"expected 'while'"))
+        return NULL;
+    
+    Condition cond = parser_parse_cond(ps);
+
+    if(!consum(ps,TOK_LBRA,"expected '{'"))
+        return NULL;
+
+    Ast *body = NULL;
+    while(ps->current->type != TOK_RBRA) {
+        Ast *stmt = parser_parse_stmt(ps);
+        if(!stmt){
+            ast_destroy(body);
+            cond_destroy(cond);
+            return NULL;
+        }
+
         ast_append(&body, stmt);
     }
 
@@ -254,7 +283,8 @@ Ast *parser_parse_if(Parser *ps) {
         return NULL;
     }
 
-    return ast_new_if(cond, body);
+    return ast_new_while(cond,body);
+
 }
 
 Ast *parser_parse_stmt(Parser *ps) {
@@ -264,6 +294,8 @@ Ast *parser_parse_stmt(Parser *ps) {
         return parser_parse_show(ps);
     } else if(ps->current->type == TOK_IF) {
         return parser_parse_if(ps);
+    } else if(ps->current->type == TOK_WHILE) {
+        return parser_parse_while(ps);
     } else {
         printf("Error: Inexprid exalue to start '%s'\n",ps->current->value);
         advance(ps);

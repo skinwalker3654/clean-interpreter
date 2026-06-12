@@ -80,6 +80,9 @@ static Token *get_ident(Lexer *lx) {
     } else if(strcmp(buffer,"if")==0) {
         free(buffer);
         return token_create(TOK_IF,NULL);
+    } else if(strcmp(buffer,"while")==0) {
+        free(buffer);
+        return token_create(TOK_WHILE,NULL);
     } else { 
         Token *tk = token_create(TOK_IDENT,buffer);
         free(buffer);

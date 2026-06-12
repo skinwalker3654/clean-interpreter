@@ -110,6 +110,21 @@ Ast *ast_new_if(Condition cond, Ast *body) {
     return new_ast;
 }
 
+Ast *ast_new_while(Condition cond, Ast *body) {
+    Ast *new_ast = malloc(sizeof(Ast));
+    if(!new_ast)  {
+        printf("Failed to create the ast node\n");
+        return NULL;
+    }
+
+    new_ast->type = AST_WHILE;
+    new_ast->data.while_stmt.cond = cond;
+    new_ast->data.while_stmt.body = body;
+
+    new_ast->next = NULL;
+    return new_ast;
+}
+
 void ast_append(Ast **head, Ast *node) {
     if(*head == NULL) {
         *head = node;
@@ -149,6 +164,10 @@ void ast_destroy(Ast *ast) {
             case AST_IF:
                 cond_destroy(temp->data.if_stmt.cond);
                 ast_destroy(temp->data.if_stmt.body);
+                break;
+            case AST_WHILE:
+                cond_destroy(temp->data.while_stmt.cond);
+                ast_destroy(temp->data.while_stmt.body);
                 break;
         }
 

@@ -5,6 +5,7 @@ typedef enum {
     AST_SHOW,
     AST_PUT,
     AST_IF,
+    AST_WHILE,
 } Ast_type;
 
 typedef enum {
@@ -54,6 +55,10 @@ typedef struct Ast {
             struct Ast *body;
         } if_stmt;
         struct {
+            Condition cond;
+            struct Ast *body;
+        } while_stmt;
+        struct {
             Expr expr;
         } showText;
     } data;
@@ -73,6 +78,7 @@ void cond_destroy(Condition cond);
 Ast *ast_new_put(char *varname, Expr ex);
 Ast *ast_new_show(Expr ex);
 Ast *ast_new_if(Condition cond, Ast *body);
+Ast *ast_new_while(Condition cond, Ast *body);
 
 void ast_append(Ast **head,Ast *node);
 void ast_destroy(Ast *ast);

@@ -8,6 +8,7 @@ typedef enum {
     TOK_PUT,
     TOK_ON,
     TOK_IF,
+    TOK_WHILE,
 
     /* values */
     TOK_NUM,

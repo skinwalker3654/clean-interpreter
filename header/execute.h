@@ -6,7 +6,7 @@
 
 int execute_put(Ast *ast,Variable_list *list);
 int execute_show(Ast *ast,Variable_list *list);
-int execute_if(Ast *ast,Variable_list *list);
+int execute_eval_cond(Variable_list *list, Condition cond);
 int execute_program(Ast *ast,Variable_list *list);
 
 #endif

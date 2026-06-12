@@ -55,7 +55,7 @@ static int eval_variable(Expr var) {
     return  1;
 }
 
-static int eval_condition(Variable_list *list, Condition cond) {
+int execute_eval_cond(Variable_list *list, Condition cond) {
     if(!eval_variable(cond.left)) return 0;
     if(!eval_variable(cond.right)) return 0;
 
@@ -104,12 +104,8 @@ static int eval_condition(Variable_list *list, Condition cond) {
     }
 }
 
-int execute_if(Ast *ast, Variable_list *list) {
-    if(eval_condition(list,ast->data.if_stmt.cond)) return 1;
-    return 0;
-}
-
 int execute_program(Ast *ast, Variable_list *list) {
+    int condition;
     while(ast != NULL) {
         switch(ast->type) {
             case AST_SHOW:
@@ -119,9 +115,14 @@ int execute_program(Ast *ast, Variable_list *list) {
                 if(execute_put(ast, list)==-1) return -1;
                 break;
             case AST_IF:
-                if(execute_if(ast,list)) {
+                if(execute_eval_cond(list,ast->data.if_stmt.cond)) {
                     execute_program(ast->data.if_stmt.body,list); 
-                    break;
+                }
+                break;
+            case AST_WHILE:
+                condition = execute_eval_cond(list,ast->data.while_stmt.cond);
+                while(condition != 0) {
+                    execute_program(ast->data.while_stmt.body,list);
                 }
                 break;
         }
