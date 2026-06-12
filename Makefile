@@ -5,7 +5,7 @@ target = main
 
 $(target): $(source)
 	@echo "compiling the interpreter..."
-	$(cc) $^ -o $@ -g
+	$(cc) $^ -o $@
 
 clean:
 	@echo "removing executables..."
