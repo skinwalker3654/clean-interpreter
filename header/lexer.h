@@ -9,6 +9,7 @@ typedef struct {
 
 Lexer *lexer_create(char *source);
 void lexer_destroy(Lexer *lx);
+
 char lexer_peek(Lexer *lx);
 char lexer_advance(Lexer *lx);
 void lexer_skip_ws(Lexer *lx);

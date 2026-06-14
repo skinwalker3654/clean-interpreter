@@ -66,14 +66,6 @@ while number == 4 {
 
 ## Build And Run
 ```bash
-git clone https://github.com/skinwalker3654/string-lib
-cd string-lib 
-
-make install
-
-cd ..
-rm -rf string-lib
-
 git clone https://github.com/skinwalker3654/clean-interpreter
 cd clean-interpreter
 make  
