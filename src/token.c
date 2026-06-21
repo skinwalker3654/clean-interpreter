@@ -183,6 +183,10 @@ Token *token_get_next(Lexer *lx) {
         case '}': return token_create(TOK_RBRA,NULL);
         case '<': return token_create(TOK_LT,NULL);
         case '>': return token_create(TOK_GT,NULL);
+        case '+': return token_create(TOK_PLUS,NULL);
+        case '-': return token_create(TOK_MINUS,NULL);
+        case '*': return token_create(TOK_STAR,NULL);
+        case '/': return token_create(TOK_SLASH,NULL);
     }
 
     printf("Error %d: Invalid character '%s'\n",lx->line,symbol);

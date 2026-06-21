@@ -25,7 +25,7 @@ It supports variables, output and input
 ### Variables
 
 ```bash
-put 10 on number;
+put 10 + (4 / 2) on number;
 put "michael" on name;
 ```
 
@@ -41,7 +41,7 @@ showText("Actuall text");
 ### input
 
 ```bash
-put readVar("Prompt: ") on var;
+put readVar("Prompt: ") on buffer;
 ```
 
 ### conditions

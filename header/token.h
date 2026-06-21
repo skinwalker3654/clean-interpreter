@@ -25,6 +25,10 @@ typedef enum {
     TOK_RPAR,
     TOK_LBRA,
     TOK_RBRA,
+    TOK_PLUS,
+    TOK_MINUS,
+    TOK_STAR,
+    TOK_SLASH,
 
     /* conditions */
     TOK_EQEQ,

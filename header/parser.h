@@ -12,8 +12,8 @@ typedef struct {
 Parser *parser_init(char *source);
 void parser_destroy(Parser *ps);
 
-Expr parser_parse_expr(Parser *ps);
-Condition parser_parse_cond(Parser *ps);
+Expr *parser_parse_expr(Parser *ps);
+Condition *parser_parse_cond(Parser *ps);
 
 Ast *parser_parse_put(Parser *ps);
 Ast *parser_parse_show(Parser *ps);

@@ -41,66 +41,157 @@ void parser_destroy(Parser *ps) {
 }
 
 /* PARSER - API */
-static void advance(Parser *ps) {
+static int match(Parser *ps, Tok_type type) {
+    if(!ps) return 0;
+    return ps->current->type == type;
+}
+
+static int advance(Parser *ps) {
     token_destroy(ps->current);
     ps->current = token_get_next(ps->lx);
+    if(ps->current == NULL) return 0;
+    return 1;
 }
 
 static int consum(Parser *ps, Tok_type type, const char *msg) {
-    if(ps->current->type != type) {
+    if(!match(ps,type)) {
         printf("Line %d: Parse error: %s\n",ps->lx->line,msg);
         return 0;
     }
 
-    advance(ps);
+    if(advance(ps)==0) return 0;
     return 1;
 }
 
-/* EXPR - API */
-Expr parser_parse_expr(Parser *ps) {
-    Expr ex = {.type=-1};
+static Expr *parse_additive(Parser *ps);
+static Expr *parse_multiplicative(Parser *ps);
+static Expr *parse_primary(Parser *ps);
 
-    if(ps->current->type == TOK_NUM) {
-        ex = expr_new_int(atol(ps->current->value));
+static Expr *parse_primary(Parser *ps) {
+    if(match(ps, TOK_NUM)) {
+        Expr *ex = expr_new_int(atol(ps->current->value));
         advance(ps);
         return ex;
     }
 
-    if(ps->current->type == TOK_STR) {
-        ex = expr_new_str(ps->current->value);
+    if(match(ps,TOK_LPAR)) {
         advance(ps);
-        return ex;
-    }
-
-    if(ps->current->type == TOK_IDENT) {
-        ex = expr_new_ident(ps->current->value);
-        advance(ps);
-        return ex;
-    }
-
-    if(ps->current->type == TOK_READ_VAR) {
-        advance(ps);
-        if(!consum(ps,TOK_LPAR,"expected '('")) {
-            return ex;
-        }
-        
-        if(ps->current->type != TOK_STR) {
-            printf("Expected string inside of \" \"\n");
-            return ex;
+        Expr *ex = parser_parse_expr(ps);
+        if(!consum(ps,TOK_RPAR,"Expected ')'")) {
+            expr_destroy(ex);
+            return NULL;
         }
 
-        ex = expr_new_read(ps->current->value);
-        advance(ps);
-
-        if(!consum(ps,TOK_RPAR,"expected ')'")) {
-            return ex;
-        }
-        
         return ex;
     }
 
-    printf("Parser error line %d: Inexprid value '%s'\n",ps->lx->line,ps->current->value);
-    return ex;
+    if(match(ps,TOK_IDENT)) {
+        Expr *ex = expr_new_ident(ps->current->value);
+        advance(ps);
+        return ex;
+    }
+
+    if(match(ps,TOK_STR)) {
+        Expr *ex = expr_new_str(ps->current->value);
+        advance(ps);
+        return ex;
+    }
+
+    if(match(ps,TOK_READ_VAR)) {
+        advance(ps);
+        if(!consum(ps,TOK_LPAR,"Expected '('"))
+            return NULL;
+
+        if(!match(ps,TOK_STR)) {
+            printf("Error line %d: Expected message on readVar\n",ps->lx->line);
+            return NULL;
+        }
+
+        char *prompt = strdup(ps->current->value);
+        advance(ps);
+
+        if(!consum(ps,TOK_RPAR,"Expected ')'")) {
+            free(prompt);
+            return NULL;
+        }
+
+        Expr *ex = expr_new_read(prompt);
+        free(prompt);
+        return ex;
+    }
+
+    printf("Error line %d: Expected an expression\n",ps->lx->line);
+    return NULL;
+}
+
+static Expr *parse_additive(Parser *ps) {
+    Expr *left = parse_multiplicative(ps);
+    if(!left) return NULL;
+
+    while(match(ps,TOK_PLUS) || match(ps,TOK_MINUS)) {
+        Binop_type op;
+        if(match(ps,TOK_PLUS)) {
+            op = OP_ADD;
+        } else if(match(ps,TOK_MINUS)) {
+            op = OP_SUB;
+        } else {
+            printf("Error line %d: Invalid arithmetic symbol '%c'\n",ps->lx->line,ps->lx->source[ps->lx->pos-1]);
+            expr_destroy(left);
+            return NULL;
+        }
+
+        advance(ps);
+        Expr *right = parse_multiplicative(ps);
+        if(!right) {
+            expr_destroy(left);
+            return NULL;
+        }
+
+        left = expr_new_bin(left, op, right);
+        if(!left) {
+            expr_destroy(right);
+            return NULL;
+        }
+    }
+
+    return left;
+}
+
+static Expr *parse_multiplicative(Parser *ps) {
+    Expr *left = parse_primary(ps);
+    if(!left) return NULL;
+
+    while(match(ps,TOK_STAR) || match(ps,TOK_SLASH)) {
+        Binop_type op;
+        if(match(ps,TOK_STAR)) {
+            op = OP_MUL;
+        } else if(match(ps,TOK_SLASH)) {
+            op = OP_DIV;
+        } else {
+            printf("Error line %d: Invalid arithmetic symbol '%c'\n",ps->lx->line,ps->lx->source[ps->lx->pos-1]);
+            expr_destroy(left);
+            return NULL;
+        }
+
+        advance(ps);
+        Expr *right = parse_primary(ps);
+        if(!right) {
+            expr_destroy(left);
+            return NULL;
+        }
+
+        left = expr_new_bin(left, op, right);
+        if(!left) {
+            expr_destroy(right);
+            return NULL;
+        }
+    }
+
+    return left;
+}
+
+Expr *parser_parse_expr(Parser *ps) {
+    return parse_additive(ps);
 }
 
 /* COND - API */
@@ -123,13 +214,13 @@ static Cond_type tok_type_to_cond(Parser *ps) {
     }
 }
 
-Condition parser_parse_cond(Parser *ps) {
-    Condition cond = {.type=-1};
+Condition *parser_parse_cond(Parser *ps) {
+    Condition *cond;
 
-    Expr left = parser_parse_expr(ps);
-    if(left.type == -1) {
+    Expr *left = parser_parse_expr(ps);
+    if(!left) {
         expr_destroy(left);
-        return cond;
+        return NULL;
     }
 
     if(ps->current->type != TOK_EQEQ 
@@ -146,11 +237,11 @@ Condition parser_parse_cond(Parser *ps) {
     Cond_type type = tok_type_to_cond(ps);
     advance(ps);
 
-    Expr right = parser_parse_expr(ps);
-    if(right.type == -1) {
+    Expr *right = parser_parse_expr(ps);
+    if(!right) {
         expr_destroy(left);
         expr_destroy(right);
-        return cond;
+        return NULL;
     }
 
     return cond_new(left, type, right);
@@ -161,16 +252,16 @@ Ast *parser_parse_put(Parser *ps) {
     if(!consum(ps,TOK_PUT,"expected 'put'"))
         return NULL;
 
-    Expr ex = parser_parse_expr(ps);
-    if(ex.type == -1) return NULL;
+    Expr *ex = parser_parse_expr(ps);
+    if(!ex) return NULL;
 
     if(!consum(ps,TOK_ON,"expected 'on'")) {
         expr_destroy(ex);
         return NULL;
     }
 
-    if(ps->current->type != TOK_IDENT) {
-        printf("Parse error: expected exariable name\n");
+    if(!match(ps,TOK_IDENT)) {
+        printf("Parse error: expected variable name\n");
         expr_destroy(ex);
         return NULL;
     }
@@ -204,8 +295,8 @@ Ast *parser_parse_show(Parser *ps) {
     if(!consum(ps,TOK_LPAR,"expected '('")) 
         return NULL;
 
-    Expr ex = parser_parse_expr(ps);
-    if(ex.type == -1) return NULL;
+    Expr *ex = parser_parse_expr(ps);
+    if(!ex) return NULL;
 
     if(!consum(ps,TOK_RPAR,"expected ')'")) {
         expr_destroy(ex);
@@ -232,10 +323,12 @@ Ast *parser_parse_if(Parser *ps) {
     if(!consum(ps,TOK_IF,"expected 'if'"))
         return NULL;
     
-    Condition cond = parser_parse_cond(ps);
+    Condition *cond = parser_parse_cond(ps);
 
-    if(!consum(ps,TOK_LBRA,"expected '{'"))
+    if(!consum(ps,TOK_LBRA,"expected '{'")) {
+        cond_destroy(cond);
         return NULL;
+    }
 
     Ast *body = NULL;
     while(ps->current->type != TOK_RBRA) {
@@ -250,6 +343,7 @@ Ast *parser_parse_if(Parser *ps) {
     }
 
     if(!consum(ps,TOK_RBRA,"expected '}'")) {
+        ast_destroy(body);
         cond_destroy(cond);
         return NULL;
     }
@@ -261,10 +355,12 @@ Ast *parser_parse_while(Parser *ps) {
     if(!consum(ps,TOK_WHILE,"expected 'while'"))
         return NULL;
     
-    Condition cond = parser_parse_cond(ps);
+    Condition *cond = parser_parse_cond(ps);
 
-    if(!consum(ps,TOK_LBRA,"expected '{'"))
+    if(!consum(ps,TOK_LBRA,"expected '{'")) {
+        cond_destroy(cond);
         return NULL;
+    }
 
     Ast *body = NULL;
     while(ps->current->type != TOK_RBRA) {
@@ -279,6 +375,7 @@ Ast *parser_parse_while(Parser *ps) {
     }
 
     if(!consum(ps,TOK_RBRA,"expected '}'")) {
+        ast_destroy(body);
         cond_destroy(cond);
         return NULL;
     }

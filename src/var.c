@@ -37,16 +37,16 @@ void variable_list_free(Variable_list *list) {
     list = NULL;
 }
 
-int get_variable_index(Variable_list *list, char *name) {
+int get_variable_index(Variable_list *list, char *varname) {
     if(!list) {
-        printf("Variable '%s' not found: variable list is empty\n",name);
+        printf("Variable '%s' not found: variable list is empty\n",varname);
         return -1;
     }
 
     int index;
     int found = 0;
     for(int i=0; i<list->counter; i++) {
-        if(strcmp(list->vars[i].name,name)==0) {
+        if(strcmp(list->vars[i].name,varname)==0) {
             found = 1;
             index = i;
             break;
@@ -57,7 +57,7 @@ int get_variable_index(Variable_list *list, char *name) {
     return -1;
 }
 
-void push_variable_value(Variable_list *list, char *varname, Expr ex) {
+void push_variable_value(Variable_list *list, char *varname, Expr *ex) {
     if(!list) {
         printf("List is not initialized\n");
         return;

@@ -13,15 +13,29 @@ typedef enum {
     EXPR_STR,
     EXPR_IDENT,
     EXPR_READ,
+    EXPR_BIN,
 } Expr_type;
 
-typedef struct {
+typedef enum {
+    OP_ADD,
+    OP_SUB,
+    OP_MUL,
+    OP_DIV,
+} Binop_type;
+
+typedef struct Expr Expr;
+typedef struct Expr {
     Expr_type type;
     union {
         int int_value;
         char *str_value;
         char *ident;
 
+        struct {
+            Expr *left;
+            Binop_type op;
+            Expr *right;
+        } bin;
         struct {
             char *prompt;
         } read_var;
@@ -38,9 +52,9 @@ typedef enum {
 } Cond_type;
 
 typedef struct {
+    Expr *left;
     Cond_type type;
-    Expr left;
-    Expr right;
+    Expr *right;
 } Condition;
 
 typedef struct Ast {
@@ -48,37 +62,38 @@ typedef struct Ast {
     union {
         struct {
             char *varname;
-            Expr expr;
+            Expr *expr;
         } put;
         struct {
-            Condition cond;
+            Condition *cond;
             struct Ast *body;
         } if_stmt;
         struct {
-            Condition cond;
+            Condition *cond;
             struct Ast *body;
         } while_stmt;
         struct {
-            Expr expr;
+            Expr *expr;
         } showText;
     } data;
     struct Ast *next;
 } Ast;
 
-Expr expr_new_int(int num);
-Expr expr_new_str(char *str);
-Expr expr_new_ident(char *ident);
-Expr expr_new_read(char *prompt);
-Expr expr_copy_expr(Expr ex);
-void expr_destroy(Expr v);
+Expr *expr_new_int(int num);
+Expr *expr_new_str(char *str);
+Expr *expr_new_ident(char *ident);
+Expr *expr_new_read(char *promt);
+Expr *expr_new_bin(Expr *left, Binop_type op, Expr *right);
+Expr *expr_copy_expr(Expr *ex);
+void expr_destroy(Expr *ex);
 
-Condition cond_new(Expr left, Cond_type type, Expr right);
-void cond_destroy(Condition cond);
+Condition *cond_new(Expr *left, Cond_type type, Expr *right);
+void cond_destroy(Condition *cond);
 
-Ast *ast_new_put(char *varname, Expr ex);
-Ast *ast_new_show(Expr ex);
-Ast *ast_new_if(Condition cond, Ast *body);
-Ast *ast_new_while(Condition cond, Ast *body);
+Ast *ast_new_put(char *varname, Expr *ex);
+Ast *ast_new_show(Expr *ex);
+Ast *ast_new_if(Condition *cond, Ast *body);
+Ast *ast_new_while(Condition *cond, Ast *body);
 
 void ast_append(Ast **head,Ast *node);
 void ast_destroy(Ast *ast);
