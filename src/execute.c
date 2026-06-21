@@ -75,6 +75,7 @@ int execute_put(Ast *ast, Variable_list *list) {
 
 int execute_show(Ast *ast, Variable_list *list) {
     int index;
+    int result;
     switch(ast->data.showText.expr->type) {
         case EXPR_STR: 
             printf("%s\n",ast->data.showText.expr->str_value);
@@ -91,6 +92,13 @@ int execute_show(Ast *ast, Variable_list *list) {
             else
                 printf("%s\n",list->vars[index].ex->str_value);
             return 0;
+        case EXPR_BIN:
+             result = execute_eval_bin(list,ast->data.showText.expr);
+             printf("%d\n",result);
+             return 0;
+        case EXPR_INT:
+             printf("%d\n",ast->data.showText.expr->int_value);
+             return 0;
         default:
             return -1;
     }
