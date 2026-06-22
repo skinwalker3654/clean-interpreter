@@ -18,6 +18,7 @@ Variable_list *variable_list_init();
 void variable_list_free(Variable_list *list);
 
 int get_variable_index(Variable_list *list, char *varname);
-void push_variable_value(Variable_list *list, char *varname, Expr *ex);
+int push_variable_value(Variable_list *list, char *varname, Expr *ex);
+int set_variable_value(Variable_list *list, char *varname, Expr *ex);
 
 #endif

@@ -57,10 +57,10 @@ int get_variable_index(Variable_list *list, char *varname) {
     return -1;
 }
 
-void push_variable_value(Variable_list *list, char *varname, Expr *ex) {
+int push_variable_value(Variable_list *list, char *varname, Expr *ex) {
     if(!list) {
         printf("List is not initialized\n");
-        return;
+        return -1;
     }
 
     if(list->counter >= list->capacity) {
@@ -68,7 +68,7 @@ void push_variable_value(Variable_list *list, char *varname, Expr *ex) {
         Variable *temp = realloc(list->vars, sizeof(Variable) * list->capacity);
         if(!temp) {
             printf("Failed to push the variable into the list\n");
-            return;
+            return -1;
         }
 
         list->vars = temp;
@@ -77,9 +77,29 @@ void push_variable_value(Variable_list *list, char *varname, Expr *ex) {
     list->vars[list->counter].name = strdup(varname);
     if(!list->vars[list->counter].name) {
         printf("Failed to create variable name\n");
-        return;
+        return -1;
     }
     
     list->vars[list->counter].ex = expr_copy_expr(ex);
     list->counter++;
+
+    return 0;
+}
+
+int set_variable_value(Variable_list *list, char *varname, Expr *ex) {
+    if(!list) {
+        printf("List is not initialized\n");
+        return -1;
+    }
+
+    int index = get_variable_index(list, varname);
+    if(index == -1) {
+        printf("Error: Variable '%s' not found\n",varname);
+        return -1;
+    }
+    
+    expr_destroy(list->vars[index].ex);
+    list->vars[index].ex = expr_copy_expr(ex);
+
+    return 0;
 }

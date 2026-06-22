@@ -22,6 +22,8 @@ Expr *expr_new_ident(char *ident) {
 }
 
 Expr *expr_new_int(int num) {
+    if(num == -1) return NULL;
+
     Expr *ex = malloc(sizeof(Expr));
     if(!ex) {
         printf("expr_new_int: Failed to create the expression\n");
@@ -209,6 +211,21 @@ Ast *ast_new_while(Condition *cond, Ast *body) {
     return new_ast;
 }
 
+Ast *ast_new_var_assign(char *varname, Expr *ex) {
+    Ast *new_ast = malloc(sizeof(Ast));
+    if(!new_ast)  {
+        printf("Failed to create the ast node\n");
+        return NULL;
+    }
+
+    new_ast->type = AST_VAR_ASSIGN;
+    new_ast->data.var_assign.varname = strdup(varname);
+    new_ast->data.var_assign.ex = ex;
+
+    new_ast->next = NULL;
+    return new_ast;
+}
+
 void ast_append(Ast **head, Ast *node) {
     if(*head == NULL) {
         *head = node;
@@ -252,6 +269,10 @@ void ast_destroy(Ast *ast) {
             case AST_WHILE:
                 cond_destroy(temp->data.while_stmt.cond);
                 ast_destroy(temp->data.while_stmt.body);
+                break;
+            case AST_VAR_ASSIGN:
+                free(temp->data.var_assign.varname);
+                expr_destroy(temp->data.var_assign.ex);
                 break;
         }
 

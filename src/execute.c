@@ -18,6 +18,11 @@ int execute_eval_bin(Variable_list *list, Expr *ex) {
                 return -1;
             }
 
+            if(list->vars[index].ex->type == EXPR_STR) {
+                printf("Error: Variable contains a string\n");
+                return -1;
+            }
+
             return list->vars[index].ex->int_value;
         case EXPR_BIN: {
             lhs = execute_eval_bin(list,ex->bin.left);
@@ -104,6 +109,22 @@ int execute_show(Ast *ast, Variable_list *list) {
     }
 }
 
+int execute_var_assign(Ast *ast, Variable_list *list) {
+    Expr *ex;
+    switch(ast->data.var_assign.ex->type) {
+        case EXPR_STR:
+            return set_variable_value(list, ast->data.var_assign.varname,ast->data.var_assign.ex);
+        default:
+            ex = expr_new_int(execute_eval_bin(list,ast->data.var_assign.ex));
+            if(!ex) return -1;
+
+            set_variable_value(list,ast->data.var_assign.varname,ex);
+            expr_destroy(ex);
+
+            return 0;
+    }
+}
+
 static int eval_variable(Expr *var) {
     if(var->type != EXPR_IDENT && var->type != EXPR_INT) {
         printf("Error: Value on the if statment has an invalid value");
@@ -162,7 +183,6 @@ int execute_eval_cond(Variable_list *list, Condition *cond) {
 }
 
 int execute_program(Ast *ast, Variable_list *list) {
-    int condition;
     while(ast != NULL) {
         switch(ast->type) {
             case AST_SHOW:
@@ -177,10 +197,12 @@ int execute_program(Ast *ast, Variable_list *list) {
                 }
                 break;
             case AST_WHILE:
-                condition = execute_eval_cond(list,ast->data.while_stmt.cond);
-                while(condition != 0) {
+                while(execute_eval_cond(list,ast->data.while_stmt.cond)) {
                     execute_program(ast->data.while_stmt.body,list);
                 }
+                break;
+            case AST_VAR_ASSIGN:
+                if(execute_var_assign(ast,list)==-1) return -1;
                 break;
         }
 

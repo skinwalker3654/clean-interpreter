@@ -384,17 +384,60 @@ Ast *parser_parse_while(Parser *ps) {
 
 }
 
+Ast *parser_parse_var_assign(Parser *ps) {
+    if(!match(ps,TOK_NUM) && 
+       !match(ps,TOK_IDENT) &&
+       !match(ps,TOK_STR) && 
+       !match(ps,TOK_LPAR)) {
+        printf("Error line %d: Expected an expresion\n",ps->lx->line);
+        return NULL;
+    }
+
+    Expr *ex = parser_parse_expr(ps);
+    if(!ex) return NULL;
+    
+    if(!consum(ps,TOK_ON,"Expected 'on'")) {
+        expr_destroy(ex);
+        return NULL;
+    }
+
+    if(!match(ps,TOK_IDENT)) {
+        printf("Error line %d: Expected an identifier\n",ps->lx->line);
+        expr_destroy(ex);
+        return NULL;
+    }
+
+    char *varname = strdup(ps->current->value);
+    advance(ps);
+
+    if(!consum(ps,TOK_SEMI,"Expected ';' at the end")) {
+        free(varname);
+        expr_destroy(ex);
+        return NULL;
+    }
+    
+    Ast *new_var_ass = ast_new_var_assign(varname,ex);
+    free(varname);
+
+    return new_var_ass;
+}
+
 Ast *parser_parse_stmt(Parser *ps) {
-    if(ps->current->type == TOK_PUT) {
+    if(match(ps,TOK_PUT)) {
         return parser_parse_put(ps);
-    } else if(ps->current->type == TOK_SHOW_TEXT) {
+    } else if(match(ps,TOK_SHOW_TEXT)) {
         return parser_parse_show(ps);
-    } else if(ps->current->type == TOK_IF) {
+    } else if(match(ps,TOK_IF)) {
         return parser_parse_if(ps);
-    } else if(ps->current->type == TOK_WHILE) {
+    } else if(match(ps,TOK_WHILE)) {
         return parser_parse_while(ps);
+    } else if(match(ps,TOK_NUM) || 
+              match(ps,TOK_LPAR) || 
+              match(ps,TOK_IDENT) || 
+              match(ps,TOK_STR)) {
+        return parser_parse_var_assign(ps);
     } else {
-        printf("Error: Inexprid exalue to start '%s'\n",ps->current->value);
+        printf("Error: Inexprid value to start '%s'\n",ps->current->value);
         advance(ps);
         return NULL;
     }

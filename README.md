@@ -9,11 +9,12 @@ It supports variables, output and input
 
 ## Features
 
-- Variables with `put VALUE on VAR;`
-- Output with `showText(VAR);` OR `showText("TEXT");`
-- Input with `put readVar(PROMPT) on VAR`
+- Variables with `put EXPR on IDENT;`
+- Output with `showText(EXPR);` OR `showText("TEXT");`
+- Input with `put readVar(PROMPT) on IDENT`
 - Conditions with `if CONDITION { CODE }`
 - Loops with `while CONDITION { CODE }`
+- Variable Assignments `EXPR on IDENT;`
 
 ## Syntax
 
@@ -32,7 +33,7 @@ put "michael" on name;
 ### Ouput
 
 ```bash
-showText(number);
+showText(number + 2);
 showText(name);
 
 showText("Actuall text");
@@ -62,6 +63,18 @@ while number == 4 {
 # you can use either variables or numbers for the conditions comparation and also you can use >,<,>=,<=,!=
 ```
 
+### var assignments
+```bash
+3 + 2 * (2 / 3) on number;
+
+int_var on new_int_var;
+
+# this is invalid because the language doesent allow to put the string value of a var into a new one
+str_var on new_str_var;
+
+#this is valid
+"string" on buffer;
+```
 ---
 
 ## Build And Run

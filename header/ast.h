@@ -6,6 +6,7 @@ typedef enum {
     AST_PUT,
     AST_IF,
     AST_WHILE,
+    AST_VAR_ASSIGN,
 } Ast_type;
 
 typedef enum {
@@ -73,6 +74,10 @@ typedef struct Ast {
             struct Ast *body;
         } while_stmt;
         struct {
+            char *varname;
+            Expr *ex;
+        } var_assign;
+        struct {
             Expr *expr;
         } showText;
     } data;
@@ -94,6 +99,7 @@ Ast *ast_new_put(char *varname, Expr *ex);
 Ast *ast_new_show(Expr *ex);
 Ast *ast_new_if(Condition *cond, Ast *body);
 Ast *ast_new_while(Condition *cond, Ast *body);
+Ast *ast_new_var_assign(char *varname, Expr *ex);
 
 void ast_append(Ast **head,Ast *node);
 void ast_destroy(Ast *ast);

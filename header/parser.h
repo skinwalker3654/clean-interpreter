@@ -19,6 +19,7 @@ Ast *parser_parse_put(Parser *ps);
 Ast *parser_parse_show(Parser *ps);
 Ast *parser_parse_if(Parser *ps);
 Ast *parser_parse_while(Parser *ps);
+Ast *parser_parse_var_assign(Parser *ps);
 
 Ast *parser_parse_stmt(Parser *ps);
 Ast *parser_parse_program(Parser *ps);
