@@ -49,21 +49,38 @@ int execute_eval_bin(Variable_list *list, Expr *ex) {
 
 int execute_put(Ast *ast, Variable_list *list) {
     char *buffer = NULL;
+    int number;
+
     size_t size = 0;
     Expr *ex;
+    Expr *ex_input;
 
     switch(ast->data.put.expr->type) {
         case EXPR_READ:
-            printf("%s",ast->data.put.expr->read_var.prompt);
-            getline(&buffer,&size,stdin);
-            buffer[strcspn(buffer,"\n")] = '\0';
+            switch(ast->data.put.expr->read_var.type) {
+                case READ_BUFF:
+                    printf("%s",ast->data.put.expr->read_var.prompt);
+                    getline(&buffer,&size,stdin);
+                    buffer[strcspn(buffer,"\n")] = '\0';
 
-            Expr *new_expr = expr_new_str(buffer);
-            push_variable_value(list, ast->data.put.varname, new_expr);
-            expr_destroy(new_expr);
-            free(buffer);
-            return 0;
+                    ex_input = expr_new_str(buffer);
+                    push_variable_value(list, ast->data.put.varname,ex_input);
+                    expr_destroy(ex_input);
+                    free(buffer);
+                    return 0;
+                case READ_NUM:
+                    printf("%s",ast->data.put.expr->read_var.prompt);
+                    if(scanf("%d",&number)!=1) {
+                        printf("Error: Invalid number passed\n");
+                        return -1;
+                    }
 
+                    ex_input = expr_new_int(number);
+                    push_variable_value(list,ast->data.put.varname,ex_input);
+                    expr_destroy(ex_input);
+                    return 0;
+            }
+            break;
         case EXPR_IDENT:
         case EXPR_INT:
         case EXPR_STR:

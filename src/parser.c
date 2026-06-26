@@ -97,7 +97,9 @@ static Expr *parse_primary(Parser *ps) {
         return ex;
     }
 
-    if(match(ps,TOK_READ_VAR)) {
+    if(match(ps,TOK_READ_BUFF) || match(ps,TOK_READ_NUM)) {
+        Read_type type = match(ps,TOK_READ_BUFF) ? READ_BUFF : READ_NUM;
+
         advance(ps);
         if(!consum(ps,TOK_LPAR,"Expected '('"))
             return NULL;
@@ -115,7 +117,7 @@ static Expr *parse_primary(Parser *ps) {
             return NULL;
         }
 
-        Expr *ex = expr_new_read(prompt);
+        Expr *ex = expr_new_read(prompt,type);
         free(prompt);
         return ex;
     }

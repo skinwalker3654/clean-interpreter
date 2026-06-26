@@ -45,7 +45,8 @@ showText("Actuall text\n");
 ### input
 
 ```bash
-put readVar("Prompt: ") on buffer;
+put readBuff("Prompt: ") on buffer;
+put readNum("Prompt: ") on number;
 ```
 
 ### conditions

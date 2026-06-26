@@ -74,9 +74,12 @@ static Token *get_ident(Lexer *lx) {
     } else if(strcmp(buffer,"showText")==0) {
         free(buffer);
         return token_create(TOK_SHOW_TEXT,NULL);
-    } else if(strcmp(buffer,"readVar")==0) {
+    } else if(strcmp(buffer,"readBuff")==0) {
         free(buffer);
-        return token_create(TOK_READ_VAR,NULL);
+        return token_create(TOK_READ_BUFF,NULL);
+    } else if(strcmp(buffer,"readNum")==0) {
+        free(buffer);
+        return token_create(TOK_READ_NUM,NULL);
     } else if(strcmp(buffer,"if")==0) {
         free(buffer);
         return token_create(TOK_IF,NULL);

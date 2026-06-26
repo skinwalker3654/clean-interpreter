@@ -54,7 +54,7 @@ Expr *expr_new_str(char *str) {
     return ex;
 }
 
-Expr *expr_new_read(char *promt) {
+Expr *expr_new_read(char *promt, Read_type type) {
     Expr *ex = malloc(sizeof(Expr));
     if(!ex) {
         printf("expr_new_read: Failed to create the expression\n");
@@ -62,6 +62,7 @@ Expr *expr_new_read(char *promt) {
     }
 
     ex->type = EXPR_READ;
+    ex->read_var.type = type;
     ex->read_var.prompt = strdup(promt);
     if(!ex->str_value) {
         printf("expr_new_str: Failed to create the string value\n");
@@ -96,7 +97,7 @@ Expr *expr_copy_expr(Expr *ex) {
         case EXPR_STR:
             return expr_new_str(ex->str_value);
         case EXPR_READ:
-            return expr_new_read(ex->read_var.prompt);
+            return expr_new_read(ex->read_var.prompt,ex->read_var.type);
         case EXPR_BIN:
             return expr_new_bin(expr_copy_expr(ex->bin.left), ex->bin.op, expr_copy_expr(ex->bin.right));
     }

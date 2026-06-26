@@ -24,6 +24,11 @@ typedef enum {
     OP_DIV,
 } Binop_type;
 
+typedef enum {
+    READ_NUM,
+    READ_BUFF,
+} Read_type;
+
 typedef struct Expr Expr;
 typedef struct Expr {
     Expr_type type;
@@ -39,6 +44,7 @@ typedef struct Expr {
         } bin;
         struct {
             char *prompt;
+            Read_type type;
         } read_var;
     };
 } Expr;
@@ -87,7 +93,7 @@ typedef struct Ast {
 Expr *expr_new_int(int num);
 Expr *expr_new_str(char *str);
 Expr *expr_new_ident(char *ident);
-Expr *expr_new_read(char *promt);
+Expr *expr_new_read(char *promt, Read_type type);
 Expr *expr_new_bin(Expr *left, Binop_type op, Expr *right);
 Expr *expr_copy_expr(Expr *ex);
 void expr_destroy(Expr *ex);

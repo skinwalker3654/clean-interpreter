@@ -17,7 +17,8 @@ typedef enum {
 
     /* functions */
     TOK_SHOW_TEXT,
-    TOK_READ_VAR,
+    TOK_READ_BUFF,
+    TOK_READ_NUM,
 
     /* symbols */
     TOK_SEMI,
