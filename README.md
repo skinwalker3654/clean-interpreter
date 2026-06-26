@@ -34,9 +34,12 @@ put "michael" on name;
 
 ```bash
 showText(number + 2);
-showText(name);
+showText("\n");
 
-showText("Actuall text");
+showText(name);
+showText("\n");
+
+showText("Actuall text\n");
 ```
 
 ### input
@@ -72,7 +75,7 @@ int_var on new_int_var;
 # this is invalid because the language doesent allow to put the string value of a var into a new one
 str_var on new_str_var;
 
-#this is valid
+# this is valid
 "string" on buffer;
 ```
 ---

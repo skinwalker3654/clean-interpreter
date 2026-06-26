@@ -83,7 +83,7 @@ int execute_show(Ast *ast, Variable_list *list) {
     int result;
     switch(ast->data.showText.expr->type) {
         case EXPR_STR: 
-            printf("%s\n",ast->data.showText.expr->str_value);
+            printf("%s",ast->data.showText.expr->str_value);
             return 0;
         case EXPR_IDENT:
             index = get_variable_index(list, ast->data.showText.expr->ident);
@@ -93,16 +93,16 @@ int execute_show(Ast *ast, Variable_list *list) {
             }
 
             if(list->vars[index].ex->type == EXPR_INT)
-                printf("%d\n",list->vars[index].ex->int_value);
+                printf("%d",list->vars[index].ex->int_value);
             else
-                printf("%s\n",list->vars[index].ex->str_value);
+                printf("%s",list->vars[index].ex->str_value);
             return 0;
         case EXPR_BIN:
              result = execute_eval_bin(list,ast->data.showText.expr);
-             printf("%d\n",result);
+             printf("%d",result);
              return 0;
         case EXPR_INT:
-             printf("%d\n",ast->data.showText.expr->int_value);
+             printf("%d",ast->data.showText.expr->int_value);
              return 0;
         default:
             return -1;

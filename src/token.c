@@ -110,6 +110,12 @@ static Token *get_string(Lexer *lx) {
 
     char *buffer = NULL;
     while(lexer_peek(lx) != '"' && lexer_peek(lx) != '\0') {
+        if(lexer_peek(lx) == '\\' && lx->source[lx->pos+1] == 'n') {
+            lexer_advance(lx);
+            lexer_advance(lx);
+            string_push_char(&buffer,'\n');
+            continue;
+        }
         string_push_char(&buffer, lexer_advance(lx));
     }
 
