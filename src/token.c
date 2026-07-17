@@ -18,7 +18,7 @@ Token *token_create(Tok_type type, char *value) {
         return new_tok;
 
     new_tok->value = strdup(value);
-    if(!new_tok) {
+    if(!new_tok->value) {
         printf("Failed to put the value into the token\n");
         free(new_tok);
         return NULL;
