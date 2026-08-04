@@ -326,6 +326,7 @@ Ast *parser_parse_if(Parser *ps) {
         return NULL;
     
     Condition *cond = parser_parse_cond(ps);
+    if(!cond) return NULL;
 
     if(!consum(ps,TOK_LBRA,"expected '{'")) {
         cond_destroy(cond);
@@ -358,6 +359,7 @@ Ast *parser_parse_while(Parser *ps) {
         return NULL;
     
     Condition *cond = parser_parse_cond(ps);
+    if(!cond) return NULL;
 
     if(!consum(ps,TOK_LBRA,"expected '{'")) {
         cond_destroy(cond);
@@ -451,6 +453,7 @@ Ast *parser_parse_program(Parser *ps) {
         Ast *new = parser_parse_stmt(ps);
         if(!new) {
             ast_destroy(head);
+            ast_destroy(new);
             return NULL;
         }
 

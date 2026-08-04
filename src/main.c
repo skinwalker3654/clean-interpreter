@@ -34,6 +34,11 @@ int main(int argc,char **argv) {
 
     Variable_list *list = variable_list_init();
     Parser *ps = parser_init(buffer);
+    if(!ps) {
+        variable_list_free(list);
+        free(buffer);
+        return 1;
+    }
 
     Ast *ast = parser_parse_program(ps);
     if(ast == NULL) goto CLEAN_UP;
